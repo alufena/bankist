@@ -73,10 +73,17 @@ displayMovements(account1.movements);
 
 // console.log(containerMovements.innerHTML);
 
-const currencies = new Map([
-  ['USD', 'United States dollar'],
-  ['EUR', 'Euro'],
-  ['GBP', 'Pound sterling'],
-]);
+const createUsernames = function (accs) {
+  accs.forEach(function (acc) {
+    acc.username = acc.owner
+      .toLowerCase()
+      .split(' ')
+      .map((name) => name[0])
+      .join('');
+  });
+};
+
+createUsernames(accounts);
+console.log(accounts);
 
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
