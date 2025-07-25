@@ -70,38 +70,38 @@ const displayMovements = function (movements) {
   });
 };
 
-displayMovements(account1.movements);
+// displayMovements(account1.movements);
 
 const calcDisplayBalance = function (movements) {
   const balance = movements.reduce((acc, mov) => acc + mov, 0);
   labelBalance.textContent = `${balance} €`;
 };
 
-calcDisplayBalance(account1.movements);
+// calcDisplayBalance(account1.movements);
 
 // console.log(containerMovements.innerHTML);
 
-const calcDisplaySummary = function (movements) {
-  const incomes = movements
+const calcDisplaySummary = function (acc) {
+  const incomes = acc.movements
     .filter((mov) => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
   labelSumIn.textContent = `${incomes} €`;
-  const out = movements
+  const out = acc.movements
     .filter((mov) => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
   labelSumOut.textContent = `${Math.abs(out)} €`;
-  const interest = movements
+  const interest = acc.movements
     .filter((mov) => mov > 0)
-    .map((deposit) => (deposit * 1.2) / 100)
+    .map((deposit) => (deposit * acc.interestRate) / 100)
     .filter((int, _, arr) => {
-      console.log(arr);
-      return int >= 1; // nova regra de pelo menos um euro
+      // console.log(arr);
+      return int >= 1; // nova regra de um euro pelo menos
     })
     .reduce((acc, int) => acc + int, 0);
   labelSumInterest.textContent = `${interest} €`;
 };
 
-calcDisplaySummary(account1.movements);
+// calcDisplaySummary(account1.movements);
 
 const createUsernames = function (accs) {
   accs.forEach(function (acc) {
@@ -114,6 +114,28 @@ const createUsernames = function (accs) {
 };
 
 createUsernames(accounts);
-console.log(accounts);
+// console.log(accounts);
 
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+let currentAccount;
+btnLogin.addEventListener('click', function (e) {
+  // console.log('test');
+  e.preventDefault();
+  currentAccount = accounts.find(
+    (acc) => acc.username === inputLoginUsername.value
+  );
+  // console.log(currentAccount);
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    // poderia ser "currentAccount &&..."  no lugar do "optional chaining" ?
+    labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]
+      }`;
+    // console.log('Login');
+    containerApp.style.opacity = 100;
+    inputLoginUsername.value = inputLoginPin.value = ''; // limpa os campos de login e senha ao logar com sucesso
+    inputLoginPin.blur(); // retira o foco do campo de pin
+    displayMovements(currentAccount.movements);
+    calcDisplayBalance(currentAccount.movements);
+    // calcDisplaySummary(currentAccount.movements);
+    calcDisplaySummary(currentAccount);
+  }
+});
+
