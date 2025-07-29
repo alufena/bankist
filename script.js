@@ -64,7 +64,7 @@ const displayMovements = function (movements) {
           <div class="movements__type movements__type--${type}">${i + 1
       } ${type}</div>
       <div class="movements__value">${mov} €</div>
-        </div >
+        </div>
   `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
@@ -147,6 +147,19 @@ btnLogin.addEventListener('click', function (e) {
         calcDisplaySummary(currentAccount); */
     updateUI(currentAccount);
   }
+});
+
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+  const amount = Number(inputLoanAmount.value);
+  if (
+    amount > 0 &&
+    currentAccount.movements.some((mov) => mov >= amount / 10) // poderia ser "... amount * 0.1" no lugar para calcular 10% (a porcentagem)
+  ) {
+    currentAccount.movements.push(amount);
+    updateUI(currentAccount);
+  }
+  inputLoanAmount.value = '';
 });
 
 btnTransfer.addEventListener('click', function (e) {
