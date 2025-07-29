@@ -55,9 +55,18 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovements = function (movements) {
+const displayMovements = function (movements, sort = false) {
+  // está F como estado padrão imitando um "preventDefault()"
   containerMovements.innerHTML = ''; // limpa o cointaner por completo
-  movements.forEach(function (mov, i) {
+  const movs = sort
+    ? movements.slice().sort((a, b) => {
+      // slice evita a mutação do array original (cria uma cópia)
+      if (a > b) return 1;
+      if (a < b) return -1;
+    })
+    : movements;
+  // movements.forEach(function (mov, i) {
+  movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const html = `
         <div class="movements__row">
@@ -198,4 +207,12 @@ btnClose.addEventListener('click', function (e) {
     containerApp.style.opacity = 0;
   }
   inputCloseUsername.value = inputClosePin.value = '';
+});
+
+let sorted = false; // state variable
+btnSort.addEventListener('click', function (e) {
+  e.preventDefault();
+  // displayMovements(currentAccount.movements, true);
+  displayMovements(currentAccount.movements, !sorted);
+  sorted = !sorted;
 });
