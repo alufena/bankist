@@ -95,23 +95,29 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovements = function (movements, sort = false) {
+const displayMovements = function (acc, sort = false) {
   // está F como estado padrão imitando um "preventDefault()"
   containerMovements.innerHTML = ''; // limpa o cointaner por completo
   const movs = sort
-    ? movements.slice().sort((a, b) => {
+    ? acc.movements.slice().sort((a, b) => {
       // slice evita a mutação do array original (cria uma cópia)
       if (a > b) return 1;
       if (a < b) return -1;
     })
-    : movements;
+    : acc.movements;
   // movements.forEach(function (mov, i) {
   movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
+    const date = new Date(acc.movementsDates[i]);
+    const day = `${date.getDate()}`.padStart(2, 0);
+    const month = `${date.getMonth() + 1}`.padStart(2, 0); // método é zero based, por isso o " + 1"
+    const year = date.getFullYear();
+    const displayDate = `${day}/${month}/${year}`;
     const html = `
         <div class="movements__row">
           <div class="movements__type movements__type--${type}">${i + 1
       } ${type}</div>
+      <div class="movements__date">${displayDate}</div>
       <div class="movements__value">${mov.toFixed(2)} €</div>
         </div>
   `;
@@ -169,12 +175,18 @@ createUsernames(accounts);
 
 const updateUI = function (acc) {
   // refatorado
-  displayMovements(acc.movements);
+  displayMovements(acc);
   calcDisplayBalance(acc);
   calcDisplaySummary(acc);
 };
 
-let currentAccount;
+let currentAccount; // event handlers
+
+/* // mantém sempre logado
+currentAccount = account1;
+updateUI(currentAccount);
+containerApp.style.opacity = 100; */
+
 btnLogin.addEventListener('click', function (e) {
   // console.log('test');
   e.preventDefault();
@@ -188,6 +200,13 @@ btnLogin.addEventListener('click', function (e) {
       }`;
     // console.log('Login');
     containerApp.style.opacity = 100;
+    const now = new Date(); // cria a data atual
+    const day = `${now.getDate()}`.padStart(2, 0);
+    const month = `${now.getMonth() + 1}`.padStart(2, 0);
+    const year = now.getFullYear();
+    const hour = `${now.getHours()}`.padStart(2, 0);
+    const min = `${now.getMinutes()}`.padStart(2, 0);
+    labelDate.textContent = `${day}/${month}/${year}, ${hour}:${min}`;
     inputLoginUsername.value = inputLoginPin.value = ''; // limpa os campos de login e senha ao logar com sucesso
     inputLoginPin.blur(); // retira o foco do campo de pin
     /*     displayMovements(currentAccount.movements);
@@ -206,6 +225,7 @@ btnLoan.addEventListener('click', function (e) {
     currentAccount.movements.some((mov) => mov >= amount / 10) // poderia ser "... amount * 0.1" no lugar para calcular 10% (a porcentagem)
   ) {
     currentAccount.movements.push(amount);
+    currentAccount.movementsDates.push(new Date().toISOString());
     updateUI(currentAccount);
   }
   inputLoanAmount.value = '';
@@ -228,6 +248,8 @@ btnTransfer.addEventListener('click', function (e) {
     // console.log('Transfer valid');
     currentAccount.movements.push(-amount); // início da transferência
     receiverAcc.movements.push(amount);
+    currentAccount.movementsDates.push(new Date().toISOString()); // adiciona uma data à transferência
+    receiverAcc.movementsDates.push(new Date().toISOString());
     updateUI(currentAccount);
   }
 });
