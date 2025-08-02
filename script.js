@@ -213,7 +213,25 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc);
 };
 
-let currentAccount; // event handlers
+const startLogOutTimer = function () {
+  const tick = function () {
+    const min = String(Math.trunc(time / 60)).padStart(2, '0');
+    const sec = String(Math.trunc(time % 60)).padStart(2, '0');
+    labelTimer.textContent = `${min}:${sec}`;
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = `Log in to get started`;
+      containerApp.style.opacity = 0;
+    }
+    time--;
+  };
+  let time = 120;
+  tick(); // invoca imediatamente
+  const timer = setInterval(tick, 1000);
+  return timer; // exporta o timer
+};
+
+let currentAccount, timer; // event handlers
 
 /* // mantém sempre logado
 currentAccount = account1;
@@ -255,6 +273,8 @@ btnLogin.addEventListener('click', function (e) {
     labelDate.textContent = `${day}/${month}/${year}, ${hour}:${min}`; */
     inputLoginUsername.value = inputLoginPin.value = ''; // limpa os campos de login e senha ao logar com sucesso
     inputLoginPin.blur(); // retira o foco do campo de pin
+    if (timer) clearInterval;
+    timer = startLogOutTimer();
     /*     displayMovements(currentAccount.movements);
         calcDisplayBalance(currentAccount);
         // calcDisplaySummary(currentAccount.movements);
@@ -271,9 +291,12 @@ btnLoan.addEventListener('click', function (e) {
     currentAccount.movements.some((mov) => mov >= amount / 10) // poderia ser "... amount * 0.1" no lugar para calcular 10% (a porcentagem)
   ) {
     setTimeout(function () {
+      // dá um tempo até a UI se atualizar
       currentAccount.movements.push(amount);
       currentAccount.movementsDates.push(new Date().toISOString());
       updateUI(currentAccount);
+      clearInterval(timer);
+      timer = startLogOutTimer();
     }, 2500);
   }
   inputLoanAmount.value = '';
@@ -299,6 +322,8 @@ btnTransfer.addEventListener('click', function (e) {
     currentAccount.movementsDates.push(new Date().toISOString()); // adiciona uma data à transferência
     receiverAcc.movementsDates.push(new Date().toISOString());
     updateUI(currentAccount);
+    clearInterval(timer);
+    timer = startLogOutTimer();
   }
 });
 
