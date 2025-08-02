@@ -107,8 +107,15 @@ const formatMovementDate = function (date, locale) {
         const month = `${date.getMonth() + 1}`.padStart(2, 0); // método é zero based, por isso o " + 1"
         const year = date.getFullYear();
         return `${day}/${month}/${year}`; */
-    return new Intl.DateTimeFormat(locale).format(date)
+    return new Intl.DateTimeFormat(locale).format(date);
   }
+};
+
+const formatCurr = function (value, locale, currency) {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+  }).format(value);
 };
 
 const displayMovements = function (acc, sort = false) {
@@ -126,6 +133,11 @@ const displayMovements = function (acc, sort = false) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const date = new Date(acc.movementsDates[i]);
     const displayDate = formatMovementDate(date, acc.locale);
+    const formattedMov = formatCurr(mov, acc.locale, acc.currency);
+    // new Intl.NumberFormat(acc.locale, {
+    //   style: 'currency',
+    //   currency: acc.currency,
+    // }).format(mov);
     /* const day = `${date.getDate()}`.padStart(2, 0);
     const month = `${date.getMonth() + 1}`.padStart(2, 0); // método é zero based, por isso o " + 1"
     const year = date.getFullYear();
@@ -136,7 +148,7 @@ const displayMovements = function (acc, sort = false) {
           <div class="movements__type movements__type--${type}">${i + 1
       } ${type}</div>
       <div class="movements__date">${displayDate}</div>
-      <div class="movements__value">${mov.toFixed(2)} €</div>
+      <div class="movements__value">${formattedMov}</div>
         </div>
   `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -149,7 +161,8 @@ const calcDisplayBalance = function (acc) {
   // const balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
   // acc.balance = balance
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance.toFixed(2)} €`;
+  // labelBalance.textContent = `${acc.balance.toFixed(2)} €`;
+  labelBalance.textContent = formatCurr(acc.balance, acc.locale, acc.currency);
 };
 
 // calcDisplayBalance(account1.movements);
@@ -160,11 +173,13 @@ const calcDisplaySummary = function (acc) {
   const incomes = acc.movements
     .filter((mov) => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes.toFixed(2)} €`;
+  // labelSumIn.textContent = `${incomes.toFixed(2)} €`;
+  labelSumIn.textContent = formatCurr(incomes, acc.locale, acc.currency);
   const out = acc.movements
     .filter((mov) => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(out).toFixed(2)} €`;
+  // labelSumOut.textContent = `${Math.abs(out).toFixed(2)} €`;
+  labelSumOut.textContent = formatCurr(Math.abs(out), acc.locale, acc.currency);
   const interest = acc.movements
     .filter((mov) => mov > 0)
     .map((deposit) => (deposit * acc.interestRate) / 100)
@@ -173,7 +188,7 @@ const calcDisplaySummary = function (acc) {
       return int >= 1; // nova regra de um euro pelo menos
     })
     .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${interest.toFixed(2)} €`;
+  labelSumInterest.textContent = formatCurr(interest, acc.locale, acc.currency);
 };
 
 // calcDisplaySummary(account1.movements);
@@ -228,9 +243,10 @@ btnLogin.addEventListener('click', function (e) {
       weekday: 'long',
     };
     // const locale = navigator.language; // usa o país de origem do navegador para exibição de datas
-    labelDate.textContent = new Intl.DateTimeFormat(currentAccount.locale, options).format(
-      now
-    );
+    labelDate.textContent = new Intl.DateTimeFormat(
+      currentAccount.locale,
+      options
+    ).format(now);
     /* const day = `${now.getDate()}`.padStart(2, 0);
     const month = `${now.getMonth() + 1}`.padStart(2, 0);
     const year = now.getFullYear();
@@ -254,9 +270,11 @@ btnLoan.addEventListener('click', function (e) {
     amount > 0 &&
     currentAccount.movements.some((mov) => mov >= amount / 10) // poderia ser "... amount * 0.1" no lugar para calcular 10% (a porcentagem)
   ) {
-    currentAccount.movements.push(amount);
-    currentAccount.movementsDates.push(new Date().toISOString());
-    updateUI(currentAccount);
+    setTimeout(function () {
+      currentAccount.movements.push(amount);
+      currentAccount.movementsDates.push(new Date().toISOString());
+      updateUI(currentAccount);
+    }, 2500);
   }
   inputLoanAmount.value = '';
 });
